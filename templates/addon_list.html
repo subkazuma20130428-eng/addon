@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}アドオン一覧 - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 30px;">アドオン一覧</h1>
+
+<div class="search-bar">
+    <form method="get" style="display: flex; gap: 10px; flex: 1;">
+        <input type="text" name="q" placeholder="アドオン名や作成者で検索..." value="{{ search_query }}" style="flex: 1;">
+        <select name="type" style="min-width: 150px;">
+            <option value="">すべての種類</option>
+            {% for value, label in addon_types %}
+                <option value="{{ value }}" {% if value == current_type %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+        <select name="sort">
+            <option value="-created_at">最新順</option>
+            <option value="-downloads">ダウンロード数</option>
+            <option value="name">名前順</option>
+        </select>
+        <button type="submit">検索</button>
+    </form>
+</div>
+
+{% if addons %}
+    <div class="addon-grid">
+        {% for addon in addons %}
+        <div class="addon-card">
+            <div class="addon-card-image">
+                {% if addon.thumbnail %}
+                    <img src="{{ addon.thumbnail.url }}" alt="{{ addon.name }}">
+                {% else %}
+                    📦 {{ addon.get_addon_type_display }}
+                {% endif %}
+            </div>
+            <div class="addon-card-content">
+                <span class="addon-type">{{ addon.get_addon_type_display }}</span>
+                <h3>{{ addon.name }}</h3>
+                <p>{{ addon.description|truncatewords:15 }}</p>
+                <div class="addon-meta">
+                    <span>v{{ addon.version }}</span>
+                    <span>⬇️ {{ addon.downloads }}</span>
+                </div>
+                <div class="addon-footer">
+                    <a href="{{ addon.get_absolute_url }}" class="button secondary">詳細</a>
+                    <a href="{% url 'download_addon' addon.slug %}" class="button">DL</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">最初</a>
+            <a href="?page={{ page_obj.previous_page_number }}">← 前へ</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <span class="current">{{ num }}</span>
+            {% else %}
+                <a href="?page={{ num }}">{{ num }}</a>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">次へ →</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">最後</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <div class="card" style="text-align: center; padding: 40px;">
+        <p style="font-size: 16px; color: #999;">該当するアドオンが見つかりませんでした。</p>
+        <a href="{% url 'addon_list' %}" class="button" style="margin-top: 15px;">検索をリセット</a>
+    </div>
+{% endif %}
+{% endblock %}

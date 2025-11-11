@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ addon.name }} - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<div style="display: grid; grid-template-columns: 300px 1fr; gap: 30px;">
+    <!-- 左：画像 -->
+    <div>
+        <div class="addon-card-image" style="height: 300px; border-radius: 8px; overflow: hidden;">
+            {% if addon.thumbnail %}
+                <img src="{{ addon.thumbnail.url }}" alt="{{ addon.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                <span style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; font-size: 60px;">📦</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 右：情報 -->
+    <div>
+        <span class="addon-type">{{ addon.get_addon_type_display }}</span>
+        <h1 style="margin: 10px 0 20px 0; font-size: 32px;">{{ addon.name }}</h1>
+
+        <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+                <div>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 5px;">バージョン</p>
+                    <p style="font-size: 18px; font-weight: bold;">v{{ addon.version }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 5px;">Minecraft</p>
+                    <p style="font-size: 18px; font-weight: bold;">{{ addon.minecraft_version }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 5px;">作成者</p>
+                    <p style="font-size: 16px;">{{ addon.author }}</p>
+                </div>
+                <div>
+                    <p style="font-size: 12px; color: #999; margin-bottom: 5px;">ダウンロード</p>
+                    <p style="font-size: 18px; font-weight: bold;">{{ addon.downloads }} 回</p>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <a href="{% url 'download_addon' addon.slug %}" class="button" style="flex: 1; text-align: center; font-size: 16px; padding: 15px;">⬇️ ダウンロード</a>
+                {% if user.is_authenticated %}
+                    {% if user == addon.owner or user.is_staff %}
+                        <a href="{% url 'addon_edit' addon.slug %}" class="button secondary" style="padding: 15px;">✏️ 編集</a>
+                        {% if not addon.published %}
+                            <form method="post" action="{% url 'publish_addon' addon.slug %}" style="display:inline-block; margin-left:8px;">
+                                {% csrf_token %}
+                                <button type="submit" class="button" style="background:#2ecc71;">公開する</button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+                <button style="padding: 15px 20px; background: #f0f0f0; border: none; border-radius: 5px; cursor: pointer; font-size: 20px;">❤️</button>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; font-size: 12px; color: #999;">
+            <span>📅 公開: {{ addon.created_at|date:'Y年m月d日' }}</span>
+            <span>🔄 更新: {{ addon.updated_at|date:'Y年m月d日' }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- 説明 -->
+<div style="background: white; padding: 30px; border-radius: 8px; margin: 30px 0;">
+    <h2 style="margin-bottom: 15px; font-size: 20px;">説明</h2>
+    <p>{{ addon.description }}</p>
+    {% if addon.long_description %}
+        <h3 style="margin-top: 20px; margin-bottom: 10px;">詳細</h3>
+        <p>{{ addon.long_description|linebreaks }}</p>
+    {% endif %}
+</div>
+
+<!-- スクリーンショット -->
+{% if screenshots %}
+<div style="background: white; padding: 30px; border-radius: 8px; margin: 30px 0;">
+    <h2 style="margin-bottom: 20px; font-size: 20px;">スクリーンショット</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        {% for screenshot in screenshots %}
+        <div style="border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s;" onclick="openModal(this.querySelector('img').src)">
+            <img src="{{ screenshot.image.url }}" alt="{{ screenshot.caption }}" style="width: 100%; height: 200px; object-fit: cover; display: block;">
+            {% if screenshot.caption %}
+                <p style="padding: 10px; background: #f5f5f5; margin: 0; font-size: 12px;">{{ screenshot.caption }}</p>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- コメントセクション -->
+<div style="background: white; padding: 20px; border-radius: 8px; margin: 30px 0;">
+    <h2 style="margin-bottom: 12px;">コメント</h2>
+    {% if addon.comments.count %}
+        <div style="display: grid; gap: 10px;">
+            {% for comment in addon.comments.all %}
+                <div style="padding:10px; border-radius:6px; background:#f9f9f9;">
+                        <div style="font-size:13px; color:#555; margin-bottom:6px;">
+                            <strong>
+                                {% if comment.user %}
+                                    {{ comment.user.username }}
+                                {% else %}
+                                    匿名
+                                {% endif %}
+                            </strong> • {{ comment.created_at|date:'Y/m/d H:i' }}
+                        </div>
+                    <div style="font-size:14px; color:#222;">{{ comment.text|linebreaks }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color:#999;">まだコメントはありません。</p>
+    {% endif %}
+
+    <div style="margin-top:16px;">
+        {% if user.is_authenticated %}
+            <form method="post" action="{% url 'post_comment' addon.slug %}">
+                {% csrf_token %}
+                {{ form.text }}
+                <div style="margin-top:8px;">
+                    <button type="submit" class="button">コメントを投稿</button>
+                </div>
+            </form>
+        {% else %}
+            <p>コメントするにはログインが必要です。<a href="{% url 'socialaccount_login' 'google' %}">Google でログイン</a></p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function openModal(src) {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: flex; align-items: center; justify-content: center; z-index: 1000; cursor: pointer;';
+    const img = document.createElement('img');
+    img.src = src;
+    img.style.cssText = 'max-width: 90%; max-height: 90%; border-radius: 8px;';
+    modal.appendChild(img);
+    modal.onclick = () => modal.remove();
+    document.body.appendChild(modal);
+}
+</script>
+{% endblock %}

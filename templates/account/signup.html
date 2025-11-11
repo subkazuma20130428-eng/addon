@@ -1,0 +1,204 @@
+{% extends 'base.html' %}
+{% load i18n %}
+
+{% block title %}ユーザー登録 - Minecraft アドオン配布{% endblock %}
+
+{% block extra_css %}
+<style>
+    .auth-container {
+        max-width: 500px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .auth-container h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+        color: #333;
+    }
+    .auth-container p {
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 14px;
+    }
+    .form-group {
+        margin-bottom: 20px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #333;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-group .helptext {
+        display: block;
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
+    }
+    .form-group ul {
+        list-style: none;
+        padding: 0;
+        margin: 5px 0 0 0;
+    }
+    .form-group ul li {
+        font-size: 12px;
+        color: #999;
+        margin-bottom: 3px;
+    }
+    .form-group ul li:before {
+        content: "• ";
+        color: #ddd;
+        margin-right: 5px;
+    }
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin-bottom: 20px;
+    }
+    .errorlist li {
+        background: #fee;
+        color: #c33;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        border-left: 4px solid #c33;
+    }
+    .form-group .errorlist {
+        margin: 5px 0 0 0;
+    }
+    .form-group .errorlist li {
+        background: #fee;
+        color: #c33;
+        padding: 8px;
+        margin-bottom: 5px;
+    }
+    .submit-btn {
+        width: 100%;
+        padding: 12px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        font-size: 16px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .submit-btn:hover {
+        background: #764ba2;
+    }
+    .signin-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 14px;
+        color: #666;
+    }
+    .signin-link a {
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .signin-link a:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <h1>ユーザー登録</h1>
+    <p>アカウントを作成して、アドオンを配布しましょう！</p>
+
+    {% if form.non_field_errors %}
+    <ul class="errorlist">
+        {% for error in form.non_field_errors %}
+        <li>{{ error }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="{{ form.username.id_for_label }}">ユーザー名</label>
+            {{ form.username }}
+            {% if form.username.errors %}
+            <ul class="errorlist">
+                {% for error in form.username.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% if form.username.help_text %}
+            <span class="helptext">{{ form.username.help_text|safe }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">メールアドレス <span style="color: #999; font-weight: normal;">(オプション)</span></label>
+            {{ form.email }}
+            {% if form.email.errors %}
+            <ul class="errorlist">
+                {% for error in form.email.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password1.id_for_label }}">パスワード</label>
+            {{ form.password1 }}
+            {% if form.password1.errors %}
+            <ul class="errorlist">
+                {% for error in form.password1.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% if form.password1.help_text %}
+            <span class="helptext">{{ form.password1.help_text|safe }}</span>
+            {% endif %}
+        </div>
+
+        <div class="form-group">
+            <label for="{{ form.password2.id_for_label }}">パスワード (再入力)</label>
+            {{ form.password2 }}
+            {% if form.password2.errors %}
+            <ul class="errorlist">
+                {% for error in form.password2.errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            {% if form.password2.help_text %}
+            <span class="helptext">{{ form.password2.help_text|safe }}</span>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="submit-btn">ユーザー登録</button>
+    </form>
+
+    <div class="signin-link">
+        すでにアカウントをお持ちであれば、<a href="{% url 'account_login' %}">こちらからログイン</a>してください。
+    </div>
+</div>
+{% endblock %}

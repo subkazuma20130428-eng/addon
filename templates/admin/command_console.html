@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}管理者コマンドコンソール{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:800px; margin: 0 auto;">
+  <h2>管理者コマンドコンソール</h2>
+  <p>コマンドを入力してください。例: <code>/ban username 0,1,0</code> （0年1月0秒）</p>
+  <form method="post">
+    {% csrf_token %}
+    <input type="text" name="command" style="width:100%; padding:10px; font-size:14px;" placeholder="/ban username 0,1,0">
+    <div style="margin-top:10px; display:flex; gap:10px;">
+      <button class="button" type="submit">実行</button>
+      <a href="{% url 'admin:index' %}" class="button secondary">管理サイトに戻る</a>
+    </div>
+  </form>
+
+  <div style="margin-top:20px; background:#111; color:#fff; padding:12px; border-radius:6px; font-family:monospace; min-height:120px;">
+    {% if output %}
+      {% for line in output %}
+        <div>{{ line }}</div>
+      {% endfor %}
+    {% else %}
+      <div style="color:#999;">ここに実行結果が表示されます。</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

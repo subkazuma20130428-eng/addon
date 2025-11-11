@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}アドオンをアップロード - Minecraft アドオン配布{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom: 20px;">アドオンをアップロード</h1>
+<div class="card">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div style="display: grid; gap: 12px;">
+      <label>名前（必須）<br>
+        {{ form.name }}</label>
+      <label>URL用スラッグ（空欄で自動生成）<br>
+        {{ form.slug }}</label>
+      <label>説明<br>
+        {{ form.description }}</label>
+      <label>詳細説明<br>
+        {{ form.long_description }}</label>
+      <label>種類<br>
+        {{ form.addon_type }}</label>
+      <label>バージョン<br>
+        {{ form.version }}</label>
+      <label>作成者<br>
+        {{ form.author }}</label>
+      <label>Minecraft バージョン<br>
+        {{ form.minecraft_version }}</label>
+      <label>サムネイル（画像）<br>
+        {{ form.thumbnail }}</label>
+      <label>ダウンロードファイル（.mcaddon 等）<br>
+        {{ form.download_file }}</label>
+      <label>公開するか
+        {{ form.published }}</label>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        {% if form.instance and form.instance.pk %}
+        <button type="submit" class="button">更新して保存</button>
+        {% else %}
+        <button type="submit" class="button">アップロードして公開</button>
+        {% endif %}
+        <a href="{% url 'addon_list' %}" class="button secondary">一覧に戻る</a>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

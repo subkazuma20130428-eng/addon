@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>{% block title %}マインクラフトアドオンズ - minecraft アドオン配布{% endblock %}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        header h1 { font-size: 28px; margin-bottom: 5px; }
+        header p { font-size: 14px; opacity: 0.9; }
+        nav {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 0;
+            margin: 0;
+        }
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 0;
+            margin: 0;
+            padding: 0;
+        }
+        nav li {
+            display: inline-block;
+            margin: 0;
+            padding: 0;
+        }
+        nav a {
+            display: block;
+            padding: 15px 20px;
+            color: #333;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        nav a:hover { background: #f0f0f0; }
+        nav a.active { background: #667eea; color: white; }
+        main { padding: 40px 0; min-height: 60vh; }
+        footer {
+            background: #333;
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+            margin-top: 40px;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.2s;
+        }
+        .button:hover { background: #764ba2; }
+        .button.secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        .button.secondary:hover { background: #ddd; }
+        .card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .addon-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .addon-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .addon-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+        .addon-card-image {
+            width: 100%;
+            height: 160px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+        .addon-card-image img { width: 100%; height: 100%; object-fit: cover; }
+        .addon-card-content { padding: 15px; }
+        .addon-card h3 { font-size: 18px; margin-bottom: 8px; color: #333; }
+        .addon-card p { font-size: 13px; color: #666; margin-bottom: 10px; line-height: 1.4; }
+        .addon-type { display: inline-block; background: #667eea; color: white; padding: 3px 8px; border-radius: 3px; font-size: 11px; margin-bottom: 8px; }
+        .addon-meta { display: flex; justify-content: space-between; font-size: 12px; color: #999; margin-bottom: 10px; }
+        .addon-footer { display: flex; gap: 8px; }
+        .addon-footer .button { flex: 1; text-align: center; padding: 8px 10px; font-size: 12px; }
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .search-bar input, .search-bar select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        .search-bar input { flex: 1; }
+        .search-bar button { padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        .pagination { text-align: center; margin-top: 30px; }
+        .pagination a, .pagination span {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 0 3px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #667eea;
+        }
+        .pagination a:hover { background: #667eea; color: white; }
+        .pagination .current { background: #667eea; color: white; border-color: #667eea; }
+        @media (max-width: 768px) {
+            nav ul { flex-wrap: wrap; }
+            .addon-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header>
+        <div class="container">
+                <h1>マインクラフトアドオンズ</h1>
+                <p>minecraft アドオン配布</p>
+        </div>
+    </header>
+
+    <nav>
+        <div class="container" style="padding: 0; display: flex; justify-content: space-between; align-items: center;">
+            <ul style="flex: 1;">
+                <li style="display: inline-block;"><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">ホーム</a></li>
+                <li style="display: inline-block;"><a href="{% url 'addon_list' %}" class="{% if request.resolver_match.url_name == 'addon_list' %}active{% endif %}">アドオン一覧</a></li>
+                {% if user.is_staff %}
+                <li style="display: inline-block;"><a href="{% url 'admin:index' %}">管理画面</a></li>
+                {% endif %}
+            </ul>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                {% if user.is_authenticated %}
+                <a href="{% url 'addon_upload' %}" class="button" style="margin: 0; padding: 10px 16px; font-size: 14px;">📦 アドオンを配布する</a>
+                <a href="{% url 'account_logout' %}" style="padding: 10px 16px; text-decoration: none; color: #667eea;">ログアウト ({{ user.username }})</a>
+                {% else %}
+                <a href="{% url 'account_login' %}" style="padding: 10px 16px; text-decoration: none; color: #667eea;">ログイン</a>
+                <a href="{% url 'account_signup' %}" class="button" style="margin: 0; padding: 10px 16px; font-size: 14px;">アカウント作成</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Minecraft アドオン配布サイト. All rights reserved.</p>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

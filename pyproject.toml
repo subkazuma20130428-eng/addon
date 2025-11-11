@@ -1,0 +1,11 @@
+[project]
+name = "addon"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "django>=5.2.8",
+    "setuptools>=80.9.0",
+    "Pillow>=11.0.0",
+]

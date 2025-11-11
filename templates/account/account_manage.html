@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}アカウント管理 - Minecraft アドオン配布{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:600px; margin: 0 auto;">
+  <h2>アカウント管理</h2>
+  <p>ここではアカウントの一時停止または削除ができます。操作は取り消せませんので注意してください。</p>
+
+  <form method="post" style="display:flex; gap:10px; flex-direction:column;">
+    {% csrf_token %}
+    <button type="submit" name="action" value="deactivate" class="button" style="background:#f39c12;">アカウントを一時停止する</button>
+    <button type="submit" name="action" value="delete" class="button" style="background:#e74c3c;">アカウントを完全に削除する</button>
+    <a href="{% url 'home' %}" class="button secondary">キャンセル</a>
+  </form>
+</div>
+{% endblock %}

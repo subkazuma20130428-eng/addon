@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}ホーム - Minecraft アドオン配布{% endblock %}
+
+{% block content %}
+<div style="background: white; padding: 40px; border-radius: 8px; margin-bottom: 40px; text-align: center;">
+    <h2 style="font-size: 32px; margin-bottom: 15px;">ようこそ！</h2>
+    <p style="font-size: 16px; color: #666; margin-bottom: 20px;">
+        このサイトは、Minecraft の高品質なアドオンを配布・共有するプラットフォームです。<br>
+        Behavior Pack、Resource Pack、Skin などを探して、ゲームをもっと楽しくしましょう！
+    </p>
+    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+        <a href="{% url 'addon_list' %}" class="button" style="font-size: 16px; padding: 12px 30px;">🔍 アドオンを探す</a>
+        {% if user.is_authenticated %}
+        <a href="{% url 'addon_upload' %}" class="button" style="background: #28a745; font-size: 16px; padding: 12px 30px;">📤 アドオンを配布する</a>
+        {% else %}
+        <a href="{% url 'account_login' %}" class="button" style="background: #6c757d; font-size: 16px; padding: 12px 30px;">📤 配布するには ログイン</a>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 40px;">
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 10px;">📦</div>
+        <h3>{{ addon_count }} 個のアドオン</h3>
+        <p style="color: #666;">高品質なアドオンが揃っています</p>
+    </div>
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 10px;">⬇️</div>
+        <h3>{{ total_downloads }} ダウンロード</h3>
+        <p style="color: #666;">多くのユーザーに支持されています</p>
+    </div>
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 40px; margin-bottom: 10px;">⭐</div>
+        <h3>高品質</h3>
+        <p style="color: #666;">厳選されたアドオンのみ掲載</p>
+    </div>
+</div>
+
+<h2 style="margin-bottom: 20px; font-size: 24px;">最新アドオン</h2>
+<div class="addon-grid">
+    {% for addon in latest_addons %}
+    <div class="addon-card">
+        <div class="addon-card-image">
+            {% if addon.thumbnail %}
+                <img src="{{ addon.thumbnail.url }}" alt="{{ addon.name }}">
+            {% else %}
+                📦 {{ addon.get_addon_type_display }}
+            {% endif %}
+        </div>
+        <div class="addon-card-content">
+            <span class="addon-type">{{ addon.get_addon_type_display }}</span>
+            <h3>{{ addon.name }}</h3>
+            <p>{{ addon.description|truncatewords:15 }}</p>
+            <div class="addon-meta">
+                <span>v{{ addon.version }}</span>
+                <span>⬇️ {{ addon.downloads }}</span>
+            </div>
+            <div class="addon-footer">
+                <a href="{{ addon.get_absolute_url }}" class="button secondary">詳細</a>
+                <a href="{% url 'download_addon' addon.slug %}" class="button">ダウンロード</a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p style="grid-column: 1 / -1; text-align: center; color: #999;">まだアドオンがありません。</p>
+    {% endfor %}
+</div>
+{% endblock %}
