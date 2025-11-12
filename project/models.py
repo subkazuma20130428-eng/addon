@@ -1,7 +1,6 @@
 from django.db import models
 from django.utils.timezone import now
 from django.urls import reverse
-from django.db import models
 
 
 class Addon(models.Model):
@@ -109,24 +108,3 @@ class BanRecord(models.Model):
         if self.expires_at is None:
             return True
         return now() < self.expires_at
-
-# app/models.py
-
-class TermsOfService(models.Model):
-    """利用規約ページ"""
-    title = models.CharField(max_length=200, default="利用規約")
-    content = models.TextField(help_text="利用規約の本文を入力してください。")
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title
-
-
-class ContactPage(models.Model):
-    """お問い合わせページ（説明文など）"""
-    title = models.CharField(max_length=200, default="お問い合わせ")
-    content = models.TextField(help_text="お問い合わせページに表示する文章（例: メールでのお問い合わせ先など）")
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.title

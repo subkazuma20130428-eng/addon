@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import Addon, AddonScreenshot
-from django.contrib import admin
-from .models import TermsOfService, ContactPage
+
 
 class AddonScreenshotInline(admin.TabularInline):
     model = AddonScreenshot
@@ -98,15 +97,3 @@ class BanRecordAdmin(admin.ModelAdmin):
     list_display = ['user', 'banned_by', 'reason', 'created_at', 'expires_at']
     search_fields = ['user__username', 'banned_by__username', 'reason']
     list_filter = ['created_at']
-
-# app/admin.py
-
-@admin.register(TermsOfService)
-class TermsAdmin(admin.ModelAdmin):
-    list_display = ('title', 'updated_at')
-    readonly_fields = ('updated_at',)
-
-@admin.register(ContactPage)
-class ContactPageAdmin(admin.ModelAdmin):
-    list_display = ('title', 'updated_at')
-    readonly_fields = ('updated_at',)
