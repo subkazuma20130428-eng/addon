@@ -101,12 +101,21 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# 本番環境（Render）では PostgreSQL を使用。開発環境では SQLite
+if os.environ.get('DATABASE_URL'):
+    # Render PostgreSQL 接続
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(default=os.environ['DATABASE_URL'], conn_max_age=600)
     }
-}
+else:
+    # 開発環境（ローカル）
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation

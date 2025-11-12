@@ -8,3 +8,5 @@ PyJWT==2.9.0
 django-allauth
 cryptography
 django-tinymce==5.0.0
+psycopg2-binary==2.9.12
+dj-database-url==2.1.0
