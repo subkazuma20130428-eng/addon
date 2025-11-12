@@ -16,6 +16,8 @@ from datetime import timedelta
 import re
 from .models import BanRecord
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render
+from .models import TermsOfService, ContactPage
 
 
 class HomeView(TemplateView):
@@ -265,3 +267,14 @@ def admin_command_console(request):
             else:
                 output.append('不明なコマンド')
     return render(request, 'admin/command_console.html', {'output': output})
+
+    # app/views.py
+
+def terms_view(request):
+    terms = TermsOfService.objects.first()
+    return render(request, "terms.html", {"terms": terms})
+
+def contact_view(request):
+    contact = ContactPage.objects.first()
+    return render(request, "contact.html", {"contact": contact})
+

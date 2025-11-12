@@ -1,0 +1,9 @@
+<!-- templates/terms.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+  <h1>{{ terms.title }}</h1>
+  <hr>
+  <div>{{ terms.content|safe }}</div>
+</div>
+{% endblock %}
