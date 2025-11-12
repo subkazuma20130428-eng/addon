@@ -108,18 +108,3 @@ class BanRecord(models.Model):
         if self.expires_at is None:
             return True
         return now() < self.expires_at
-
-class Inquiry(models.Model):
-    """お問い合わせフォームの送信内容"""
-    name = models.CharField('お名前', max_length=50)
-    email = models.EmailField('メールアドレス')
-    message = models.TextField('内容')
-    created_at = models.DateTimeField('送信日時', auto_now_add=True)
-
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'お問い合わせ'
-        verbose_name_plural = 'お問い合わせ'
-
-    def __str__(self):
-        return f"{self.name} ({self.email}) - {self.created_at.strftime('%Y/%m/%d %H:%M')}"
