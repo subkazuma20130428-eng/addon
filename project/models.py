@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.timezone import now
 from django.urls import reverse
+from django.db import models
 
 
 class Addon(models.Model):
@@ -109,17 +110,23 @@ class BanRecord(models.Model):
             return True
         return now() < self.expires_at
 
-class Inquiry(models.Model):
-    """お問い合わせフォームの送信内容"""
-    name = models.CharField('お名前', max_length=50)
-    email = models.EmailField('メールアドレス')
-    message = models.TextField('内容')
-    created_at = models.DateTimeField('送信日時', auto_now_add=True)
+# app/models.py
 
-    class Meta:
-        ordering = ['-created_at']
-        verbose_name = 'お問い合わせ'
-        verbose_name_plural = 'お問い合わせ'
+class TermsOfService(models.Model):
+    """利用規約ページ"""
+    title = models.CharField(max_length=200, default="利用規約")
+    content = models.TextField(help_text="利用規約の本文を入力してください。")
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.name} ({self.email}) - {self.created_at.strftime('%Y/%m/%d %H:%M')}"
+        return self.title
+
+
+class ContactPage(models.Model):
+    """お問い合わせページ（説明文など）"""
+    title = models.CharField(max_length=200, default="お問い合わせ")
+    content = models.TextField(help_text="お問い合わせページに表示する文章（例: メールでのお問い合わせ先など）")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.title
