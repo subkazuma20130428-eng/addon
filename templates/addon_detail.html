@@ -125,7 +125,11 @@
                 </div>
             </form>
         {% else %}
-            <p>コメントするにはログインが必要です。<a href="{% url 'socialaccount_login' 'google' %}">Google でログイン</a></p>
+            <p>
+  コメントするにはログインが必要です。
+  <a href="{% provider_login_url 'google' %}">Google でログイン</a>
+</p>
+
         {% endif %}
     </div>
 </div>
