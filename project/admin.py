@@ -97,3 +97,11 @@ class BanRecordAdmin(admin.ModelAdmin):
     list_display = ['user', 'banned_by', 'reason', 'created_at', 'expires_at']
     search_fields = ['user__username', 'banned_by__username', 'reason']
     list_filter = ['created_at']
+
+    from .models import Inquiry
+
+@admin.register(Inquiry)
+class InquiryAdmin(admin.ModelAdmin):
+    list_display = ('name', 'email', 'created_at')
+    readonly_fields = ('name', 'email', 'message', 'created_at')
+
