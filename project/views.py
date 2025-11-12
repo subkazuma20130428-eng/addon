@@ -80,8 +80,19 @@ class AddonDetailView(DetailView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['screenshots'] = self.object.screenshots.all()
+        addon = self.object
+        user = self.request.user
+
+        # スクリーンショット一覧
+        context['screenshots'] = addon.screenshots.all()
+
+        # ログインしているかチェックして安全に処理
+        context['is_owner'] = user.is_authenticated and addon.owner == user
+        context['comment_form'] = CommentForm()
+        context['comments'] = Comment.objects.filter(addon=addon).order_by('-created_at')
+
         return context
+
 
 
 def download_addon(request, slug):
