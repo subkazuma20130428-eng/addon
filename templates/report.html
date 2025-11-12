@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}通報 - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:20px;">通報フォーム</h1>
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <label>対象アドオン（該当があれば選択）</label>
+            {{ form.addon }}
+            <label>対象のURL（任意）</label>
+            {{ form.url }}
+            <label>通報内容</label>
+            {{ form.description }}
+            <div style="margin-top:10px;">
+                <button type="submit" class="button">送信</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

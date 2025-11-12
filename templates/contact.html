@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}お問い合わせ - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:20px;">お問い合わせ</h1>
+<div class="card">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div style="display:flex; flex-direction:column; gap:10px;">
+            <label>お名前</label>
+            {{ form.name }}
+            <label>メールアドレス</label>
+            {{ form.email }}
+            <label>件名（任意）</label>
+            {{ form.subject }}
+            <label>メッセージ</label>
+            {{ form.message }}
+            <label>画像添付（任意）</label>
+            {{ form.image }}
+            <div style="margin-top:10px;">
+                <button type="submit" class="button">送信</button>
+            </div>
+        </div>
+    </form>
+</div>
+{% if contact_list %}
+    <h2 style="margin-top:20px;">最近のお問い合わせ</h2>
+    <div class="card">
+        <table style="width:100%; border-collapse:collapse;">
+            <thead>
+                <tr>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">日時</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">お名前</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">メール</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">件名</th>
+                    <th style="text-align:left; padding:8px; border-bottom:1px solid #ddd;">本文</th>
+                    <th style="padding:8px; border-bottom:1px solid #ddd;">状態</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contact_list %}
+                <tr>
+                    <td style="padding:8px; vertical-align:top;">{{ c.created_at }}</td>
+                    <td style="padding:8px; vertical-align:top;">{{ c.name }}</td>
+                    <td style="padding:8px; vertical-align:top;">{{ c.email }}</td>
+                    <td style="padding:8px; vertical-align:top;">{{ c.subject|default:'（件名なし）' }}</td>
+                    <td style="padding:8px; vertical-align:top;">{{ c.message|linebreaksbr }}
+                    {% if c.image %}
+                        <div style="margin-top:8px;">
+                            <img src="{{ c.image.url }}" alt="添付画像" style="max-width:100%; height:auto; border-radius:4px; max-height:200px;">
+                        </div>
+                    {% endif %}
+                    </td>
+                    <td style="padding:8px; vertical-align:top;">
+                        {% if user.is_staff %}
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <form method="post" action="{% url 'contact_toggle_handled' c.pk %}">{% csrf_token %}
+                                <button type="submit" class="button secondary">{% if c.handled %}対応済みに戻す{% else %}対応済みにする{% endif %}</button>
+                            </form>
+                            <button class="button" onclick="document.getElementById('reply-form-{{ c.pk }}').style.display = (document.getElementById('reply-form-{{ c.pk }}').style.display=='none'?'block':'none')">返信</button>
+                        </div>
+                        <div id="reply-form-{{ c.pk }}" style="display:none; margin-top:8px;">
+                            <form method="post" action="{% url 'contact_reply' c.pk %}">
+                                {% csrf_token %}
+                                <div style="display:flex; flex-direction:column; gap:6px;">
+                                    <input type="text" name="reply_subject" placeholder="件名（任意）" style="padding:8px; border:1px solid #ddd; border-radius:4px;">
+                                    <textarea name="reply_message" placeholder="返信メッセージ" rows="4" style="padding:8px; border:1px solid #ddd; border-radius:4px;"></textarea>
+                                    <div>
+                                        <button type="submit" class="button">送信</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                        {% if c.replies.all %}
+                            <div style="margin-top:10px; border-top:1px solid #eee; padding-top:8px;">
+                                <strong>返信履歴</strong>
+                                <ul style="list-style:none; padding-left:0;">
+                                    {% for r in c.replies.all %}
+                                    <li style="margin-top:8px; padding:8px; background:#fafafa; border:1px solid #eee; border-radius:6px;">
+                                        <div style="font-size:12px; color:#666;">{{ r.replied_at }} by {% if r.replied_by %}{{ r.replied_by.username }}{% else %}(unknown){% endif %}</div>
+                                        <div style="margin-top:6px;"><strong>{{ r.subject }}</strong></div>
+                                        <div style="margin-top:6px;">{{ r.message|linebreaksbr }}</div>
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                        {% else %}
+                            {% if c.handled %}対応済み{% else %}未対応{% endif %}
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endif %}
+{% endblock %}

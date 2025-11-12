@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if wiki %}{{ wiki.title }} 編集{% else %}新しいWikiページを作成{% endif %} - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1>{% if wiki %}{{ wiki.title }} を編集{% else %}新しいWikiページを作成{% endif %}</h1>
+
+<div class="card">
+    <form method="post" style="display:flex; flex-direction:column; gap:15px;">
+        {% csrf_token %}
+        <div>
+            <label for="id_title">タイトル</label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <div style="color:red; font-size:12px;">{{ form.title.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="id_slug">URL（スラッグ）</label>
+            {{ form.slug }}
+            <div style="font-size:12px; color:#999; margin-top:5px;">空欄にするとタイトルから自動生成されます。</div>
+            {% if form.slug.errors %}
+            <div style="color:red; font-size:12px;">{{ form.slug.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="id_image">サムネイル画像</label>
+            {{ form.image }}
+            <div style="font-size:12px; color:#999; margin-top:5px;">オプション: Wiki ページのサムネイル画像をアップロードできます。</div>
+            {% if form.image.errors %}
+            <div style="color:red; font-size:12px;">{{ form.image.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="id_video_url">動画URL</label>
+            {{ form.video_url }}
+            <div style="font-size:12px; color:#999; margin-top:5px;">オプション: YouTubeまたは他の動画URLを埋め込みできます。</div>
+            {% if form.video_url.errors %}
+            <div style="color:red; font-size:12px;">{{ form.video_url.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <label for="id_content">内容</label>
+            {{ form.content }}
+            {% if form.content.errors %}
+            <div style="color:red; font-size:12px;">{{ form.content.errors }}</div>
+            {% endif %}
+        </div>
+        
+        <div style="display:flex; gap:10px; margin-top:20px;">
+            <button type="submit" class="button">保存</button>
+            <a href="{% url 'wiki_list' %}" class="button secondary">キャンセル</a>
+        </div>
+    </form>
+</div>
+
+<style>
+    #id_title, #id_slug, #id_image, #id_content {
+        width:100%;
+        padding:10px;
+        border:1px solid #ddd;
+        border-radius:4px;
+        font-family:inherit;
+        font-size:14px;
+    }
+    #id_content {
+        resize:vertical;
+        min-height:400px;
+    }
+</style>
+
+{{ form.media }}
+{% endblock %}

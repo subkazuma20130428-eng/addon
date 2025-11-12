@@ -28,6 +28,16 @@ from .views import (
     AddonUpdateView,
     admin_command_console,
     post_comment,
+    contact_view,
+    contact_toggle_handled,
+    contact_reply,
+    terms_view,
+    announcement_view,
+    report_view,
+    WikiListView,
+    WikiDetailView,
+    WikiCreateView,
+    WikiUpdateView,
 )
 
 urlpatterns = [
@@ -43,7 +53,18 @@ urlpatterns = [
     path('upload/', AddonCreateView.as_view(), name='addon_upload'),
     path('upload/<slug:slug>/edit/', AddonUpdateView.as_view(), name='addon_edit'),
     path('addons/<slug:slug>/comment/', post_comment, name='post_comment'),
+    path('contact/', contact_view, name='contact'),
+    path('contact/toggle/<int:pk>/', contact_toggle_handled, name='contact_toggle_handled'),
+    path('contact/reply/<int:pk>/', contact_reply, name='contact_reply'),
+    path('terms/', terms_view, name='terms'),
+    path('announcement/', announcement_view, name='announcement'),
+    path('report/', report_view, name='report'),
+    path('wiki/', WikiListView.as_view(), name='wiki_list'),
+    path('wiki/create/', WikiCreateView.as_view(), name='wiki_create'),
+    path('wiki/<slug:slug>/', WikiDetailView.as_view(), name='wiki_detail'),
+    path('wiki/<slug:slug>/edit/', WikiUpdateView.as_view(), name='wiki_edit'),
     path('accounts/', include('allauth.urls')),
+    path('tinymce/', include('tinymce.urls')),
     # 管理者用コマンドコンソール
     path('admin/commands/', admin_command_console, name='admin_command_console'),
 ]

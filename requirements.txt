@@ -7,3 +7,4 @@ requests==2.32.3
 PyJWT==2.9.0
 django-allauth
 cryptography
+django-tinymce==5.0.0

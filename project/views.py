@@ -9,8 +9,12 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.utils.text import slugify
 from django.contrib.admin.views.decorators import staff_member_required
-from .models import Addon, Comment
+from .models import Addon, Comment, ContactMessage
 from .forms import AddonForm, CommentForm
+from .forms import ContactForm, ReportForm, WikiForm
+from .models import TermsPage, Report, Announcement, Wiki
+from django.core.mail import send_mail
+from django.conf import settings
 from django.utils.timezone import now
 from datetime import timedelta
 import re
@@ -88,7 +92,9 @@ class AddonDetailView(DetailView):
 
         # ログインしているかチェックして安全に処理
         context['is_owner'] = user.is_authenticated and addon.owner == user
+        # Provide both names so templates using either 'form' or 'comment_form' work
         context['comment_form'] = CommentForm()
+        context['form'] = context['comment_form']
         context['comments'] = Comment.objects.filter(addon=addon).order_by('-created_at')
 
         return context
@@ -176,6 +182,10 @@ def post_comment(request, slug):
             comment.addon = addon
             comment.user = request.user
             comment.save()
+            messages.success(request, 'コメントを投稿しました。')
+        else:
+            # Inform user about validation errors
+            messages.error(request, 'コメントを投稿できませんでした。入力内容を確認してください。')
     return redirect(addon.get_absolute_url())
 
 
@@ -265,3 +275,205 @@ def admin_command_console(request):
             else:
                 output.append('不明なコマンド')
     return render(request, 'admin/command_console.html', {'output': output})
+
+
+def contact_view(request):
+    """問い合わせページ。フォーム送信をDBの `ContactMessage` に保存し、管理画面で確認できるようにする。"""
+    from .models import ContactMessage
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST, request.FILES)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            subject = form.cleaned_data.get('subject') or ''
+            message = form.cleaned_data['message']
+            image = request.FILES.get('image')
+
+            # DBに保存
+            contact = ContactMessage.objects.create(
+                name=name,
+                email=email,
+                subject=subject,
+                message=message
+            )
+            if image:
+                contact.image = image
+                contact.save()
+
+            messages.success(request, 'お問い合わせを受け付けました。管理者が確認します。')
+            return redirect('contact')
+    else:
+        form = ContactForm()
+    # 管理者向けに最近の問い合わせ一覧も渡す
+    contact_list = None
+    if request.user.is_staff:
+        contact_list = ContactMessage.objects.all().order_by('-created_at')[:200]
+    else:
+        # ログインユーザーは自分が送った問い合わせ（メール一致）を表示
+        if request.user.is_authenticated:
+            contact_list = ContactMessage.objects.filter(email=request.user.email).order_by('-created_at')[:50]
+
+    return render(request, 'contact.html', {'form': form, 'contact_list': contact_list})
+
+
+@staff_member_required
+def contact_toggle_handled(request, pk):
+    """管理者が問い合わせの handled フラグを切り替えるための簡易ビュー（POST）。"""
+    from django.shortcuts import get_object_or_404
+    if request.method == 'POST':
+        cm = get_object_or_404(ContactMessage, pk=pk)
+        cm.handled = not cm.handled
+        if cm.handled:
+            cm.handled_by = request.user
+        else:
+            cm.handled_by = None
+        cm.save(update_fields=['handled', 'handled_by'])
+    return redirect('contact')
+
+
+@staff_member_required
+def contact_reply(request, pk):
+    """管理者が問い合わせに対して返信メールを送信するビュー。
+
+    POST パラメータ:
+      - reply_subject (任意)
+      - reply_message (必須)
+    送信元は settings.DEFAULT_FROM_EMAIL を使い、送信先は問い合わせのメールアドレス。
+    送信成功時は問い合わせを対応済みにして handled_by を設定する。
+    """
+    from django.shortcuts import get_object_or_404
+    if request.method != 'POST':
+        return redirect('contact')
+
+    cm = get_object_or_404(ContactMessage, pk=pk)
+    reply_subject = request.POST.get('reply_subject') or f'お問い合わせへの返信: {cm.subject or "(件名なし)"}'
+    reply_message = request.POST.get('reply_message', '').strip()
+    if not reply_message:
+        messages.error(request, '返信メッセージを入力してください。')
+        return redirect('contact')
+
+    # 送信元アドレス
+    from_addr = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or cm.email
+
+    try:
+        send_mail(reply_subject, reply_message, from_addr, [cm.email], fail_silently=False)
+        # マーク対応済み
+        cm.handled = True
+        cm.handled_by = request.user
+        cm.save(update_fields=['handled', 'handled_by'])
+        # DBに返信を保存
+        from .models import ContactReply
+        ContactReply.objects.create(
+            contact=cm,
+            subject=reply_subject,
+            message=reply_message,
+            replied_by=request.user
+        )
+        messages.success(request, f'返信を送信しました: {cm.email}')
+    except Exception as e:
+        messages.error(request, f'返信の送信に失敗しました: {e}')
+
+    return redirect('contact')
+
+
+def terms_view(request):
+    """利用規約ページ。管理画面で編集した最新の active=True ページを表示する。"""
+    page = TermsPage.objects.filter(active=True).order_by('-created_at').first()
+    if not page:
+        # デフォルト文言
+        page = TermsPage(title='利用規約', content='利用規約はまだ設定されていません。管理画面で追加してください。', active=True)
+    return render(request, 'terms.html', {'page': page})
+
+
+def announcement_view(request):
+    """お知らせ一覧ページ。公開中のお知らせを新着順で表示する。"""
+    announcements = Announcement.objects.filter(published=True).order_by('-created_at')
+    return render(request, 'announcement.html', {'announcements': announcements})
+
+
+@login_required
+def report_view(request):
+    """通報ページ。ログインユーザーは reporter に自動設定される。"""
+    if request.method == 'POST':
+        form = ReportForm(request.POST)
+        if form.is_valid():
+            report = form.save(commit=False)
+            if request.user.is_authenticated:
+                report.reporter = request.user
+            report.save()
+            messages.success(request, '通報を受け付けました。管理者が確認します。')
+            return redirect('report')
+    else:
+        form = ReportForm()
+    return render(request, 'report.html', {'form': form})
+
+
+class WikiListView(ListView):
+    """Wiki ページ一覧"""
+    model = Wiki
+    template_name = 'wiki_list.html'
+    context_object_name = 'wikis'
+    paginate_by = 20
+
+    def get_queryset(self):
+        queryset = Wiki.objects.all()
+        query = self.request.GET.get('q')
+        if query:
+            queryset = queryset.filter(
+                Q(title__icontains=query) |
+                Q(content__icontains=query)
+            )
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('q', '')
+        return context
+
+
+class WikiDetailView(DetailView):
+    """Wiki ページ詳細表示"""
+    model = Wiki
+    template_name = 'wiki_detail.html'
+    context_object_name = 'wiki'
+    slug_field = 'slug'
+
+
+class WikiCreateView(LoginRequiredMixin, CreateView):
+    """Wiki ページ作成"""
+    model = Wiki
+    form_class = WikiForm
+    template_name = 'wiki_form.html'
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.created_by = self.request.user
+        instance.updated_by = self.request.user
+        # slug が空なら title から自動生成
+        if not instance.slug:
+            base = slugify(instance.title) or 'wiki'
+            slug = base
+            counter = 1
+            while Wiki.objects.filter(slug=slug).exists():
+                slug = f"{base}-{counter}"
+                counter += 1
+            instance.slug = slug
+        instance.save()
+        messages.success(self.request, 'Wiki ページを作成しました。')
+        return super().form_valid(form)
+
+
+class WikiUpdateView(LoginRequiredMixin, UpdateView):
+    """Wiki ページ編集（全ユーザー可能）"""
+    model = Wiki
+    form_class = WikiForm
+    template_name = 'wiki_form.html'
+    slug_field = 'slug'
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        instance.updated_by = self.request.user
+        instance.save()
+        messages.success(self.request, 'Wiki ページを更新しました。')
+        return super().form_valid(form)

@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ page.title }} - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:20px;">{{ page.title }}</h1>
+<div class="card">
+    <div style="white-space: pre-line;">{{ page.content }}</div>
+</div>
+{% endblock %}

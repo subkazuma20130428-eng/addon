@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Wiki - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:20px;">Wiki</h1>
+<div style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:white; padding:20px; border-radius:8px; margin-bottom:20px; text-align:center;">
+    <p style="margin:0; font-size:18px; font-weight:bold;">どこでも無料 | いつでも無料 | ドメイン無料 | 無料公開！</p>
+</div>
+
+<div style="margin-bottom:20px;">
+    {% if user.is_authenticated %}
+    <a href="{% url 'wiki_create' %}" class="button">+ 新しいページを作成</a>
+    {% else %}
+    <p><a href="{% url 'account_login' %}">ログイン</a>してWikiページを作成できます。</p>
+    {% endif %}
+</div>
+
+<div class="card" style="margin-bottom:20px;">
+    <form method="get" style="display:flex; gap:10px;">
+        <input type="text" name="q" value="{{ search_query }}" placeholder="ページを検索..." style="flex:1; padding:10px; border:1px solid #ddd; border-radius:4px;">
+        <button type="submit" class="button">検索</button>
+    </form>
+</div>
+
+{% if wikis %}
+    <div style="display:flex; flex-direction:column; gap:15px;">
+        {% for wiki in wikis %}
+        <div class="card">
+            <div style="display:flex; gap:15px;">
+                {% if wiki.image %}
+                <img src="{{ wiki.image.url }}" alt="{{ wiki.title }}" style="width:150px; height:150px; object-fit:cover; border-radius:6px; flex-shrink:0;">
+                {% endif %}
+                <div style="flex:1;">
+                    <h2 style="margin-top:0; margin-bottom:8px;"><a href="{% url 'wiki_detail' wiki.slug %}" style="color:#667eea; text-decoration:none;">{{ wiki.title }}</a></h2>
+                    <div style="font-size:12px; color:#999; margin-bottom:10px;">
+                        作成: {{ wiki.created_at|date:"Y年m月d日" }} by {{ wiki.created_by.username|default:"(削除済み)" }} 
+                        | 更新: {{ wiki.updated_at|date:"Y年m月d日" }}
+                    </div>
+                    <p style="margin:10px 0; color:#666;">{{ wiki.content|truncatewords:30 }}</p>
+                    <div>
+                        <a href="{% url 'wiki_detail' wiki.slug %}" style="color:#667eea; text-decoration:none; font-size:14px;">詳細を見る →</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+    <div class="pagination" style="margin-top:30px;">
+        {% if page_obj.has_previous %}
+            <a href="?page=1">« 最初</a>
+            <a href="?page={{ page_obj.previous_page_number }}">‹ 前へ</a>
+        {% endif %}
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}">次へ ›</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}">最後 »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+{% else %}
+    <div class="card">
+        <p>Wikiページがまだありません。{% if user.is_authenticated %}<a href="{% url 'wiki_create' %}">最初のページを作成</a>してください。{% endif %}</p>
+    </div>
+{% endif %}
+{% endblock %}

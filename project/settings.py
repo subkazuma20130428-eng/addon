@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'project.apps.ProjectConfig',  # アドオン配布アプリ
+    'tinymce',  # リッチテキストエディタ
 ]
 
 # django-allauth for social login
@@ -156,3 +157,28 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
 ]
+
+# 管理者連絡先（お問い合わせフォームの送信先）
+ADMINS = [
+    ('サイト管理者', 'kazuma20130428@gamil.com'),
+]
+
+# フロントからの送信で受信先が設定されていない場合のフォールバック送信先
+DEFAULT_FROM_EMAIL = 'kazuma20130428@gamil.com'
+
+# 開発時はコンソール出力。実運用でメールを送る場合は SMTP 設定に変更してください。
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
+
+# TinyMCE設定
+TINYMCE_DEFAULT_CONFIG = {
+    'height': 400,
+    'width': '100%',
+    'plugins': 'advlist autolink lists link image charmap print preview anchor searchreplace visualblocks code fullscreen insertdatetime media table paste code help wordcount',
+    'toolbar': 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | code | help',
+    'menubar': 'file edit view insert format tools table help',
+    'language': 'ja',
+    'content_langs': [('ja', 'Japanese'), ('en', 'English')],
+    'convert_urls': False,
+    'relative_urls': False,
+}
+

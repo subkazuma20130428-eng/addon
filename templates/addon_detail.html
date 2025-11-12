@@ -68,28 +68,58 @@
 <div style="background: white; padding: 30px; border-radius: 8px; margin: 30px 0;">
     <h2 style="margin-bottom: 15px; font-size: 20px;">説明</h2>
     <p>{{ addon.description }}</p>
+    
     {% if addon.long_description %}
         <h3 style="margin-top: 20px; margin-bottom: 10px;">詳細</h3>
-        <p>{{ addon.long_description|linebreaks }}</p>
+        <div style="line-height: 1.6;">{{ addon.long_description|safe }}</div>
+    {% endif %}
+    
+    <!-- 説明内の動画・画像セクション -->
+    {% if addon.videos.all or screenshots %}
+    <div style="margin-top: 30px; padding-top: 30px; border-top: 1px solid #eee;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+            <!-- スクリーンショット -->
+            {% for screenshot in screenshots %}
+            <div style="border-radius: 8px; overflow: hidden; background: #f5f5f5;">
+                <img src="{{ screenshot.image.url }}" alt="{{ screenshot.caption }}" style="width: 100%; height: 220px; object-fit: cover; display: block; cursor: pointer;" onclick="openModal(this.src)">
+                {% if screenshot.caption %}
+                    <p style="padding: 10px; margin: 0; font-size: 12px; background: #f0f0f0;">{{ screenshot.caption }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <!-- 動画 -->
+            {% for video in addon.videos.all %}
+            <div style="border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                <div style="position: relative; width: 100%; padding-bottom: 56.25%; background: #000;">
+                    {% if video.video_type == 'file' and video.video_file %}
+                        <video 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" 
+                            controls
+                            {% if video.thumbnail %}
+                                poster="{{ video.thumbnail.url }}"
+                            {% endif %}>
+                            <source src="{{ video.video_file.url }}" type="video/mp4">
+                            お使いのブラウザは動画再生に対応していません。
+                        </video>
+                    {% elif video.video_type in 'youtube|other' and video.video_url %}
+                        <iframe 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            src="{{ video.get_embed_url }}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    {% endif %}
+                </div>
+                {% if video.caption %}
+                    <p style="padding: 10px; margin: 0; font-size: 12px; background: #f5f5f5;">{{ video.caption }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
     {% endif %}
 </div>
-
-<!-- スクリーンショット -->
-{% if screenshots %}
-<div style="background: white; padding: 30px; border-radius: 8px; margin: 30px 0;">
-    <h2 style="margin-bottom: 20px; font-size: 20px;">スクリーンショット</h2>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
-        {% for screenshot in screenshots %}
-        <div style="border-radius: 8px; overflow: hidden; cursor: pointer; transition: transform 0.2s;" onclick="openModal(this.querySelector('img').src)">
-            <img src="{{ screenshot.image.url }}" alt="{{ screenshot.caption }}" style="width: 100%; height: 200px; object-fit: cover; display: block;">
-            {% if screenshot.caption %}
-                <p style="padding: 10px; background: #f5f5f5; margin: 0; font-size: 12px;">{{ screenshot.caption }}</p>
-            {% endif %}
-        </div>
-        {% endfor %}
-    </div>
-</div>
-{% endif %}
 
 <!-- コメントセクション -->
 <div style="background: white; padding: 20px; border-radius: 8px; margin: 30px 0;">

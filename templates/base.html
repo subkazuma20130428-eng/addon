@@ -159,6 +159,10 @@
             <ul style="flex: 1;">
                 <li style="display: inline-block;"><a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">ホーム</a></li>
                 <li style="display: inline-block;"><a href="{% url 'addon_list' %}" class="{% if request.resolver_match.url_name == 'addon_list' %}active{% endif %}">アドオン一覧</a></li>
+                <li style="display: inline-block;"><a href="{% url 'wiki_list' %}" class="{% if request.resolver_match.url_name|stringformat:'s' in 'wiki_list,wiki_detail,wiki_create,wiki_edit' %}active{% endif %}">Wiki</a></li>
+                <li style="display: inline-block;"><a href="{% url 'announcement' %}" class="{% if request.resolver_match.url_name == 'announcement' %}active{% endif %}">お知らせ</a></li>
+                <li style="display: inline-block;"><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">お問い合わせ</a></li>
+                <li style="display: inline-block;"><a href="{% url 'terms' %}" class="{% if request.resolver_match.url_name == 'terms' %}active{% endif %}">利用規約</a></li>
                 {% if user.is_staff %}
                 <li style="display: inline-block;"><a href="{% url 'admin:index' %}">管理画面</a></li>
                 {% endif %}

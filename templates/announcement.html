@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}お知らせ - マインクラフトアドオンズ{% endblock %}
+
+{% block content %}
+<h1 style="margin-bottom:20px;">お知らせ</h1>
+
+{% if announcements %}
+    <div style="display:flex; flex-direction:column; gap:20px;">
+        {% for announcement in announcements %}
+        <div class="card">
+            <h2 style="margin-top:0; margin-bottom:10px;">{{ announcement.title }}</h2>
+            <div style="font-size:12px; color:#999; margin-bottom:15px;">{{ announcement.created_at|date:"Y年m月d日 H:i" }}</div>
+            
+            <div style="white-space: pre-line; line-height: 1.6;">{{ announcement.content }}</div>
+            
+            <!-- 画像と動画を説明内に統合表示 -->
+            {% if announcement.image or announcement.video_url %}
+            <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #eee; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+                {% if announcement.image %}
+                <div style="border-radius: 8px; overflow: hidden;">
+                    <img src="{{ announcement.image.url }}" alt="{{ announcement.title }}" style="width: 100%; height: auto; border-radius: 8px;">
+                </div>
+                {% endif %}
+                
+                {% if announcement.video_url %}
+                <div style="border-radius: 8px; overflow: hidden; background: #f0f0f0;">
+                    <div style="position: relative; width: 100%; padding-bottom: 56.25%; background: #000;">
+                        <iframe 
+                            style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none;" 
+                            src="{{ announcement.get_embed_url }}"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card">
+        <p>お知らせはまだありません。</p>
+    </div>
+{% endif %}
+{% endblock %}
