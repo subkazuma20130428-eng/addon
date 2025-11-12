@@ -141,3 +141,18 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.django
+import os
+from pathlib import Path
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+# 静的ファイルのURL
+STATIC_URL = '/static/'
+
+# 静的ファイルを collectstatic でまとめる場所
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# （開発中のみ）テンプレートでの静的ファイル探索場所
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
