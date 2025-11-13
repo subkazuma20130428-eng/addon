@@ -9,4 +9,5 @@ django-allauth
 cryptography
 django-tinymce==5.0.0
 dj-database-url==1.0.0
-psycopg2-binary==2.9.6
+# Use psycopg (psycopg3) binary wheel which has better support for newer Pythons (e.g. 3.14)
+psycopg[binary]
