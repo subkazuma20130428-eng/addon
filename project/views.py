@@ -7,6 +7,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db import ProgrammingError, OperationalError
 from django.utils.text import slugify
 from django.contrib.admin.views.decorators import staff_member_required
 from .models import Addon, Comment, ContactMessage
@@ -28,9 +29,17 @@ class HomeView(TemplateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['latest_addons'] = Addon.objects.filter(published=True)[:6]
-        context['addon_count'] = Addon.objects.filter(published=True).count()
-        context['total_downloads'] = sum(a.downloads for a in Addon.objects.filter(published=True))
+        # DB テーブルが未作成（マイグレーション未実行）などでエラーになると 500 になるため
+        # 一時的に例外を握りつぶして空のデータでフォールバックする。
+        try:
+            context['latest_addons'] = Addon.objects.filter(published=True)[:6]
+            context['addon_count'] = Addon.objects.filter(published=True).count()
+            context['total_downloads'] = sum(a.downloads for a in Addon.objects.filter(published=True))
+        except (ProgrammingError, OperationalError):
+            # 本番DBにテーブルがない等の初期化前の状態向けフォールバック
+            context['latest_addons'] = []
+            context['addon_count'] = 0
+            context['total_downloads'] = 0
         return context
 
 
