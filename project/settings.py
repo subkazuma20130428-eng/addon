@@ -29,7 +29,7 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 # ✅ Renderなどのデプロイ用に修正済み
 ALLOWED_HOSTS = os.environ.get(
     'ALLOWED_HOSTS',
-    'localhost,127.0.0.1,mainkurahutoadoonzu.onrender.com'
+    'localhost,127.0.0.1,mainkurahutoadoonzu.onrender.com,masuMC1182.pythonanywhere.com'
 ).split(',')
 
 
